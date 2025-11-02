@@ -199,48 +199,196 @@
             text-align: center;
         }
 
+        .open-spotify-btn {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 0.8rem 1.8rem;
+            background: #1DB954;
+            color: #000000;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .open-spotify-btn:hover {
+            background: #1ed760;
+            transform: scale(1.05);
+        }
+
+        .open-spotify-btn:active {
+            transform: scale(0.95);
+        }
+
+        .spotify-notice {
+            background: rgba(29, 185, 84, 0.1);
+            border: 1px solid #1DB954;
+            border-radius: 10px;
+            padding: 1rem;
+            margin: 1.5rem auto;
+            max-width: 700px;
+            text-align: center;
+            color: #b3b3b3;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .spotify-notice strong {
+            color: #1DB954;
+        }
+
+        .video-container iframe,
+        .spotify-embed iframe {
+            pointer-events: auto;
+        }
+
+        /* Optimize loading */
+        iframe {
+            loading: lazy;
+        }
+
+        /* Play overlay */
+        .play-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            border-radius: 12px;
+            transition: background 0.3s;
+        }
+
+        .play-overlay:hover {
+            background: rgba(0, 0, 0, 0.8);
+        }
+
+        .play-overlay::after {
+            content: '▶';
+            font-size: 4rem;
+            color: #1DB954;
+        }
+
+        .media-player.playing .play-overlay {
+            display: none;
+        }
+
         /* Script to handle single playback */
     </style>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            let currentlyPlaying = null;
+        // Aggressive single playback controller
+        (function() {
+            let currentPlayingWrapper = null;
             
-            // Get all iframes (Spotify and YouTube)
-            const allFrames = document.querySelectorAll('iframe');
-            
-            // Function to pause all media
-            function pauseAllMedia(exceptFrame) {
-                allFrames.forEach(frame => {
-                    if (frame !== exceptFrame) {
-                        // Reload iframe to stop playback
-                        const src = frame.src;
-                        frame.src = '';
-                        frame.src = src;
+            function stopAllPlayers(exceptWrapper) {
+                document.querySelectorAll('.media-player, .video-container').forEach(wrapper => {
+                    if (wrapper !== exceptWrapper) {
+                        const iframe = wrapper.querySelector('iframe');
+                        if (iframe) {
+                            // Force stop by resetting src
+                            const originalSrc = iframe.getAttribute('data-original-src') || iframe.src;
+                            iframe.setAttribute('data-original-src', originalSrc);
+                            iframe.src = 'about:blank';
+                            
+                            // Remove playing class
+                            wrapper.classList.remove('playing');
+                            
+                            // Restore overlay after a moment
+                            setTimeout(() => {
+                                if (!wrapper.querySelector('.play-overlay')) {
+                                    createPlayOverlay(wrapper);
+                                }
+                            }, 100);
+                        }
                     }
                 });
             }
             
-            // Add click listeners to all iframes
-            allFrames.forEach(frame => {
-                frame.addEventListener('load', function() {
-                    // Use mouse enter as a proxy for interaction
-                    frame.parentElement.addEventListener('mouseenter', function() {
-                        if (currentlyPlaying && currentlyPlaying !== frame) {
-                            pauseAllMedia(frame);
-                        }
-                        currentlyPlaying = frame;
-                    });
+            function createPlayOverlay(wrapper) {
+                // Remove existing overlay
+                const existingOverlay = wrapper.querySelector('.play-overlay');
+                if (existingOverlay) {
+                    existingOverlay.remove();
+                }
+                
+                const overlay = document.createElement('div');
+                overlay.className = 'play-overlay';
+                
+                overlay.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
                     
-                    // Also handle touch for mobile
-                    frame.parentElement.addEventListener('touchstart', function() {
-                        if (currentlyPlaying && currentlyPlaying !== frame) {
-                            pauseAllMedia(frame);
+                    // Stop all other players first
+                    stopAllPlayers(wrapper);
+                    
+                    // Start this player
+                    const iframe = wrapper.querySelector('iframe');
+                    if (iframe) {
+                        const originalSrc = iframe.getAttribute('data-original-src') || iframe.src;
+                        if (iframe.src === 'about:blank' || !iframe.src) {
+                            iframe.src = originalSrc;
                         }
-                        currentlyPlaying = frame;
-                    });
+                        iframe.setAttribute('data-original-src', originalSrc);
+                    }
+                    
+                    // Mark as playing
+                    wrapper.classList.add('playing');
+                    currentPlayingWrapper = wrapper;
+                    
+                    // Remove overlay
+                    overlay.remove();
                 });
+                
+                wrapper.appendChild(overlay);
+            }
+            
+            function initializePlayControls() {
+                // Add overlays to all media players
+                document.querySelectorAll('.media-player, .video-container').forEach(wrapper => {
+                    const iframe = wrapper.querySelector('iframe');
+                    if (iframe) {
+                        // Store original src
+                        iframe.setAttribute('data-original-src', iframe.src);
+                        
+                        // Create overlay
+                        if (!wrapper.querySelector('.play-overlay')) {
+                            createPlayOverlay(wrapper);
+                        }
+                    }
+                });
+            }
+            
+            // Initialize on load
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initializePlayControls);
+            } else {
+                initializePlayControls();
+            }
+            
+            // Also initialize after window load
+            window.addEventListener('load', function() {
+                setTimeout(initializePlayControls, 300);
             });
-        });
+            
+            // Global click handler to detect clicks inside iframes
+            window.addEventListener('blur', function() {
+                if (document.activeElement && document.activeElement.tagName === 'IFRAME') {
+                    const wrapper = document.activeElement.closest('.media-player, .video-container');
+                    if (wrapper && !wrapper.classList.contains('playing')) {
+                        stopAllPlayers(wrapper);
+                        wrapper.classList.add('playing');
+                        currentPlayingWrapper = wrapper;
+                    }
+                }
+            });
+        })();
     </script>
     <style>
 
@@ -595,11 +743,12 @@
             </div>
             <div class="video-container media-player">
                 <iframe 
-                    src="https://www.youtube.com/embed/7PVyRkshQ68" 
+                    src="https://www.youtube.com/embed/7PVyRkshQ68?enablejsapi=1&rel=0" 
                     title="Featured Adventist Worship Video" 
                     frameborder="0" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                    allowfullscreen>
+                    allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                    allowfullscreen
+                    loading="lazy">
                 </iframe>
             </div>
         </section>
@@ -617,25 +766,25 @@
                 <div class="media-player">
                     <p class="track-label">Manginsauki</p>
                     <div class="spotify-embed">
-                        <iframe data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/track/7tq9xQh1glkKkZMIGPhOiP?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+                        <iframe data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/track/7tq9xQh1glkKkZMIGPhOiP?utm_source=generator&theme=0" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
                     </div>
                 </div>
                 <div class="media-player">
                     <p class="track-label">YekiJerusalem</p>
                     <div class="spotify-embed">
-                        <iframe data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/track/1Ex8OyfYrsgWUshDZPvRiJ?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+                        <iframe data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/track/1Ex8OyfYrsgWUshDZPvRiJ?utm_source=generator&theme=0" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
                     </div>
                 </div>
                 <div class="media-player">
                     <p class="track-label">Ubonakala</p>
                     <div class="spotify-embed">
-                        <iframe data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/track/68cBlYP88HRqH3K28bY8Zg?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+                        <iframe data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/track/68cBlYP88HRqH3K28bY8Zg?utm_source=generator&theme=0" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
                     </div>
                 </div>
                 <div class="media-player">
                     <p class="track-label">Jesus Paid It All</p>
                     <div class="spotify-embed">
-                        <iframe data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/track/7cvPYx9eqEDyg7LMfTliqP?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+                        <iframe data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/track/7cvPYx9eqEDyg7LMfTliqP?utm_source=generator&theme=0" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
                     </div>
                 </div>
             </div>
