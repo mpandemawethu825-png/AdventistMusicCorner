@@ -18,20 +18,20 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             line-height: 1.6;
-            color: #e0e0e0;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: #ffffff;
+            background: #121212;
             min-height: 100vh;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
         }
 
         header {
-            background: rgba(26, 26, 46, 0.95);
+            background: #000000;
             box-shadow: 0 2px 10px rgba(0,0,0,0.5);
             position: sticky;
             top: 0;
             z-index: 1000;
-            border-bottom: 1px solid rgba(230, 57, 70, 0.3);
+            border-bottom: 1px solid #282828;
         }
 
         nav {
@@ -82,6 +82,9 @@
             padding: 3rem 1rem 2rem;
             text-align: center;
             color: white;
+            background: linear-gradient(180deg, #1DB954 0%, #121212 100%);
+            border-radius: 15px;
+            margin-top: 1rem;
         }
 
         .hero h1 {
@@ -105,16 +108,15 @@
         }
 
         .section {
-            background: rgba(26, 26, 46, 0.9);
+            background: #181818;
             border-radius: 15px;
             padding: 2rem 1.5rem;
             margin-bottom: 1.5rem;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            border: 1px solid rgba(230, 57, 70, 0.2);
         }
 
         .section h2 {
-            color: #e63946;
+            color: #1DB954;
             margin-bottom: 1.5rem;
             font-size: clamp(1.5rem, 4vw, 2rem);
             text-align: center;
@@ -130,12 +132,11 @@
         }
 
         .video-section {
-            background: rgba(26, 26, 46, 0.9);
+            background: #181818;
             border-radius: 15px;
             padding: 2rem 1.5rem;
             margin-bottom: 1.5rem;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            border: 1px solid rgba(230, 57, 70, 0.2);
         }
 
         .video-container {
@@ -158,12 +159,11 @@
         }
 
         .spotify-section {
-            background: rgba(26, 26, 46, 0.9);
+            background: #181818;
             border-radius: 15px;
             padding: 2rem 1.5rem;
             margin-bottom: 1.5rem;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            border: 1px solid rgba(29, 185, 84, 0.3);
         }
 
         .spotify-grid {
@@ -187,7 +187,7 @@
         }
 
         .latest-playlists {
-            background: linear-gradient(135deg, #e63946 0%, #a4133c 100%);
+            background: #181818;
             color: white;
             padding: 2rem 1.5rem;
             border-radius: 15px;
@@ -204,20 +204,27 @@
             grid-template-columns: 1fr;
             gap: 1.5rem;
             margin-top: 1.5rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .playlist-card {
-            background: rgba(0, 0, 0, 0.3);
+            background: #282828;
             backdrop-filter: blur(10px);
             padding: 1.5rem;
             border-radius: 12px;
             transition: all 0.3s;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid #282828;
         }
 
         .playlist-card:active {
-            background: rgba(0, 0, 0, 0.5);
+            background: #333333;
             transform: scale(0.98);
+        }
+
+        .playlist-card:hover {
+            background: #333333;
         }
 
         .playlist-card h3 {
@@ -235,8 +242,8 @@
         .playlist-link {
             display: inline-block;
             padding: 0.8rem 1.8rem;
-            background: white;
-            color: #a4133c;
+            background: #1DB954;
+            color: #000000;
             text-decoration: none;
             border-radius: 25px;
             font-weight: 600;
@@ -246,7 +253,12 @@
 
         .playlist-link:active {
             transform: scale(0.95);
-            background: #f0f0f0;
+            background: #1ed760;
+        }
+
+        .playlist-link:hover {
+            background: #1ed760;
+            transform: scale(1.05);
         }
 
         .platforms-grid {
@@ -314,13 +326,13 @@
 
         .feature-box {
             padding: 1.5rem;
-            background: rgba(45, 48, 71, 0.6);
+            background: #282828;
             border-radius: 10px;
-            border-left: 4px solid #e63946;
+            border-left: 4px solid #1DB954;
         }
 
         .feature-box h3 {
-            color: #e63946;
+            color: #1DB954;
             margin-bottom: 1rem;
             font-size: clamp(1.1rem, 3vw, 1.3rem);
         }
@@ -336,23 +348,23 @@
             position: relative;
             font-size: 0.95rem;
             line-height: 1.5;
-            color: #d0d0d0;
+            color: #b3b3b3;
         }
 
         .feature-box li:before {
             content: "♪";
             position: absolute;
             left: 0;
-            color: #e63946;
+            color: #1DB954;
             font-weight: bold;
         }
 
         footer {
-            background: rgba(26, 26, 46, 0.95);
+            background: #000000;
             padding: 2rem 1rem;
             text-align: center;
             margin-top: 1.5rem;
-            border-top: 1px solid rgba(230, 57, 70, 0.3);
+            border-top: 1px solid #282828;
         }
 
         .footer-content {
@@ -369,7 +381,7 @@
         }
 
         .social-links a {
-            color: #e63946;
+            color: #1DB954;
             font-size: 1rem;
             transition: transform 0.3s;
             padding: 0.5rem;
@@ -381,11 +393,15 @@
             transform: scale(1.1);
         }
 
+        .social-links a:hover {
+            color: #1ed760;
+        }
+
         footer p {
             font-size: 0.9rem;
             line-height: 1.6;
             padding: 0 1rem;
-            color: #b0b0b0;
+            color: #b3b3b3;
         }
 
         /* Tablet (min-width: 600px) */
@@ -497,8 +513,8 @@
             <ul class="nav-links">
                 <li><a href="#home">Home</a></li>
                 <li><a href="#video">Featured</a></li>
-                <li><a href="#spotify">New</a></li>
-                <li><a href="#playlists">Playlists</a></li>
+                <li><a href="#spotify">New Music</a></li>
+                <li><a href="#playlist">Playlist</a></li>
                 <li><a href="#platforms">Platforms</a></li>
             </ul>
         </nav>
@@ -513,9 +529,9 @@
         <!-- Featured Video Section -->
         <section class="video-section" id="video">
             <div style="text-align: center; margin-bottom: 1rem;">
-                <span class="badge" style="background: linear-gradient(135deg, #e63946 0%, #a4133c 100%); color: white;">JUST RELEASED</span>
+                <span class="badge" style="background: #1DB954; color: #000000; font-weight: 700;">JUST RELEASED</span>
                 <h2 style="margin-top: 0.5rem;">Our Featured Video</h2>
-                <p style="color: #b0b0b0; font-size: clamp(0.95rem, 2.5vw, 1.1rem); max-width: 700px; margin: 1rem auto 0; padding: 0 0.5rem; line-height: 1.6;">
+                <p style="color: #b3b3b3; font-size: clamp(0.95rem, 2.5vw, 1.1rem); max-width: 700px; margin: 1rem auto 0; padding: 0 0.5rem; line-height: 1.6;">
                     Immerse yourself in this week's inspiring worship experience — beautifully crafted to uplift your spirit and draw you closer to God
                 </p>
             </div>
@@ -533,9 +549,9 @@
         <!-- New This Week Section -->
         <section class="spotify-section" id="spotify">
             <div style="text-align: center; margin-bottom: 1rem;">
-                <span class="badge" style="background: #1DB954; color: white;">NEW THIS WEEK</span>
+                <span class="badge" style="background: #1DB954; color: #000000; font-weight: 700;">NEW THIS WEEK</span>
                 <h2>Fresh Sounds & Worship</h2>
-                <p style="color: #b0b0b0; font-size: clamp(0.95rem, 2.5vw, 1.05rem); max-width: 700px; margin: 1rem auto 0; padding: 0 0.5rem; line-height: 1.6;">
+                <p style="color: #b3b3b3; font-size: clamp(0.95rem, 2.5vw, 1.05rem); max-width: 700px; margin: 1rem auto 0; padding: 0 0.5rem; line-height: 1.6;">
                     Discover this week's newest additions — handpicked worship music and inspiring albums added just for you
                 </p>
             </div>
@@ -555,63 +571,33 @@
             </div>
         </section>
 
-        <!-- Curated Playlists Section -->
-        <section class="latest-playlists" id="playlists">
+        <!-- Curated Playlist Section -->
+        <section class="latest-playlists" id="playlist">
             <div style="text-align: center; margin-bottom: 1rem;">
-                <span class="badge" style="background: rgba(255,255,255,0.25); backdrop-filter: blur(10px);">CURATED FOR YOU</span>
-                <h2>Our Playlists</h2>
-                <p style="font-size: clamp(0.95rem, 2.5vw, 1.05rem); max-width: 700px; margin: 1rem auto 0; opacity: 0.95; padding: 0 0.5rem; line-height: 1.6;">
-                    Thoughtfully crafted collections for every moment of worship, devotion, and spiritual growth
+                <span class="badge" style="background: #1DB954; color: #000000; font-weight: 700;">CURATED FOR YOU</span>
+                <h2 style="color: #1DB954;">Featured Playlist</h2>
+                <p style="font-size: clamp(0.95rem, 2.5vw, 1.05rem); max-width: 700px; margin: 1rem auto 0; opacity: 0.95; padding: 0 0.5rem; line-height: 1.6; color: #b3b3b3;">
+                    Our handpicked collection for worship, devotion, and spiritual growth
                 </p>
             </div>
             
-            <div class="playlists-grid">
+            <div style="max-width: 600px; margin: 2rem auto;">
                 <div class="playlist-card">
-                    <h3>Sabbath Morning Worship</h3>
-                    <p>Perfect songs to enhance your Sabbath service experience</p>
-                    <a href="https://open.spotify.com" target="_blank" class="playlist-link">Listen Now</a>
-                </div>
-                
-                <div class="playlist-card">
-                    <h3>Contemporary Praise</h3>
-                    <p>Modern worship music for youth and young adults</p>
-                    <a href="https://open.spotify.com" target="_blank" class="playlist-link">Listen Now</a>
-                </div>
-                
-                <div class="playlist-card">
-                    <h3>Peaceful Meditation</h3>
-                    <p>Calming instrumental and vocal music for prayer time</p>
-                    <a href="https://open.spotify.com" target="_blank" class="playlist-link">Listen Now</a>
-                </div>
-                
-                <div class="playlist-card">
-                    <h3>Scripture Songs</h3>
-                    <p>Bible verses beautifully set to music</p>
-                    <a href="https://open.spotify.com" target="_blank" class="playlist-link">Listen Now</a>
-                </div>
-                
-                <div class="playlist-card">
-                    <h3>Morning Devotional</h3>
-                    <p>Start your day with uplifting worship and praise</p>
-                    <a href="https://open.spotify.com" target="_blank" class="playlist-link">Listen Now</a>
-                </div>
-                
-                <div class="playlist-card">
-                    <h3>Family Favorites</h3>
-                    <p>Uplifting songs for the whole family to enjoy together</p>
+                    <h3>Daily Worship Experience</h3>
+                    <p>Perfect songs for your daily devotion, reflection, and worship</p>
                     <a href="https://open.spotify.com" target="_blank" class="playlist-link">Listen Now</a>
                 </div>
             </div>
         </section>
 
-        <!-- All Streaming Platforms -->
+        <!-- Streaming Platforms -->
         <section class="section" id="platforms">
             <h2>Stream Everywhere</h2>
-            <p style="text-align: center; color: #b0b0b0; margin-bottom: 1rem; font-size: clamp(0.95rem, 2.5vw, 1rem); padding: 0 0.5rem; line-height: 1.6;">
-                Access our music collection on all your favorite streaming platforms
+            <p style="text-align: center; color: #b3b3b3; margin-bottom: 1rem; font-size: clamp(0.95rem, 2.5vw, 1rem); padding: 0 0.5rem; line-height: 1.6;">
+                Access our music collection on your favorite streaming platforms
             </p>
             
-            <div class="platforms-grid">
+            <div class="platforms-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); max-width: 800px; margin: 0 auto;">
                 <div class="platform-card">
                     <h3>Spotify</h3>
                     <p>Discover curated Adventist playlists and albums</p>
@@ -622,18 +608,6 @@
                     <h3>YouTube</h3>
                     <p>Watch music videos and live worship sessions</p>
                     <a href="https://youtube.com" target="_blank" class="platform-link">Watch on YouTube</a>
-                </div>
-
-                <div class="platform-card">
-                    <h3>Apple Music</h3>
-                    <p>Stream high-quality Adventist worship music</p>
-                    <a href="https://music.apple.com" target="_blank" class="platform-link">Open Apple Music</a>
-                </div>
-
-                <div class="platform-card">
-                    <h3>SoundCloud</h3>
-                    <p>Explore independent Adventist artists</p>
-                    <a href="https://soundcloud.com" target="_blank" class="platform-link">Browse SoundCloud</a>
                 </div>
             </div>
         </section>
@@ -677,7 +651,7 @@
         <!-- About Section -->
         <section class="section">
             <h2>About Our Ministry</h2>
-            <p style="text-align: center; color: #b0b0b0; max-width: 800px; margin: 0 auto; line-height: 1.8; font-size: clamp(0.95rem, 2.5vw, 1rem); padding: 0 0.5rem;">
+            <p style="text-align: center; color: #b3b3b3; max-width: 800px; margin: 0 auto; line-height: 1.8; font-size: clamp(0.95rem, 2.5vw, 1rem); padding: 0 0.5rem;">
                 Adventist Music Hub is dedicated to preserving and promoting the rich musical heritage of the Seventh-day Adventist Church 
                 while embracing contemporary expressions of worship. We connect believers worldwide with inspiring music that uplifts the soul, 
                 strengthens faith, and glorifies God. Whether you're seeking traditional hymns, contemporary worship, or gospel music, 
@@ -685,7 +659,7 @@
             </p>
             
             <div style="text-align: center; margin-top: 2rem; padding: 0 1rem;">
-                <p style="font-style: italic; color: #e63946; font-size: clamp(1rem, 2.5vw, 1.1rem); line-height: 1.6;">
+                <p style="font-style: italic; color: #1DB954; font-size: clamp(1rem, 2.5vw, 1.1rem); line-height: 1.6;">
                     "Make a joyful noise unto the Lord, all the earth: make a loud noise, and rejoice, and sing praise." - Psalm 98:4
                 </p>
             </div>
@@ -694,7 +668,7 @@
 
     <footer>
         <div class="footer-content">
-            <h3 style="color: #e63946; margin-bottom: 1rem; font-size: clamp(1.1rem, 3vw, 1.3rem);">Connect With Us</h3>
+            <h3 style="color: #1DB954; margin-bottom: 1rem; font-size: clamp(1.1rem, 3vw, 1.3rem);">Connect With Us</h3>
             <div class="social-links">
                 <a href="#" title="Facebook" aria-label="Facebook">Facebook</a>
                 <a href="#" title="Instagram" aria-label="Instagram">Instagram</a>
@@ -710,4 +684,4 @@
         </div>
     </footer>
 </body>
-</html>..run code
+</html>
