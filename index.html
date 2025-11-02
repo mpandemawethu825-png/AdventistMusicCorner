@@ -169,14 +169,14 @@
         .spotify-grid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 1.5rem;
+            gap: 2rem;
             margin-top: 1.5rem;
         }
 
         .spotify-embed {
             border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
             width: 100%;
         }
 
@@ -184,7 +184,65 @@
             width: 100%;
             height: 352px;
             border: none;
+            display: block;
         }
+
+        .media-player {
+            position: relative;
+        }
+
+        .track-label {
+            color: #1DB954;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+
+        /* Script to handle single playback */
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let currentlyPlaying = null;
+            
+            // Get all iframes (Spotify and YouTube)
+            const allFrames = document.querySelectorAll('iframe');
+            
+            // Function to pause all media
+            function pauseAllMedia(exceptFrame) {
+                allFrames.forEach(frame => {
+                    if (frame !== exceptFrame) {
+                        // Reload iframe to stop playback
+                        const src = frame.src;
+                        frame.src = '';
+                        frame.src = src;
+                    }
+                });
+            }
+            
+            // Add click listeners to all iframes
+            allFrames.forEach(frame => {
+                frame.addEventListener('load', function() {
+                    // Use mouse enter as a proxy for interaction
+                    frame.parentElement.addEventListener('mouseenter', function() {
+                        if (currentlyPlaying && currentlyPlaying !== frame) {
+                            pauseAllMedia(frame);
+                        }
+                        currentlyPlaying = frame;
+                    });
+                    
+                    // Also handle touch for mobile
+                    frame.parentElement.addEventListener('touchstart', function() {
+                        if (currentlyPlaying && currentlyPlaying !== frame) {
+                            pauseAllMedia(frame);
+                        }
+                        currentlyPlaying = frame;
+                    });
+                });
+            });
+        });
+    </script>
+    <style>
 
         .latest-playlists {
             background: #181818;
@@ -529,13 +587,13 @@
         <!-- Featured Video Section -->
         <section class="video-section" id="video">
             <div style="text-align: center; margin-bottom: 1rem;">
-                <span class="badge" style="background: #1DB954; color: #000000; font-weight: 700;">JUST RELEASED</span>
+                <span class="badge" style="background: #1DB954; color: #000000; font-weight: 700;">FEATURED</span>
                 <h2 style="margin-top: 0.5rem;">Our Featured Video</h2>
                 <p style="color: #b3b3b3; font-size: clamp(0.95rem, 2.5vw, 1.1rem); max-width: 700px; margin: 1rem auto 0; padding: 0 0.5rem; line-height: 1.6;">
                     Immerse yourself in this week's inspiring worship experience — beautifully crafted to uplift your spirit and draw you closer to God
                 </p>
             </div>
-            <div class="video-container">
+            <div class="video-container media-player">
                 <iframe 
                     src="https://www.youtube.com/embed/7PVyRkshQ68" 
                     title="Featured Adventist Worship Video" 
@@ -549,24 +607,36 @@
         <!-- New This Week Section -->
         <section class="spotify-section" id="spotify">
             <div style="text-align: center; margin-bottom: 1rem;">
-                <span class="badge" style="background: #1DB954; color: #000000; font-weight: 700;">NEW THIS WEEK</span>
+                <span class="badge" style="background: #1DB954; color: #000000; font-weight: 700;">TRANSCENDENT SOUNDS</span>
                 <h2>Fresh Sounds & Worship</h2>
                 <p style="color: #b3b3b3; font-size: clamp(0.95rem, 2.5vw, 1.05rem); max-width: 700px; margin: 1rem auto 0; padding: 0 0.5rem; line-height: 1.6;">
-                    Discover this week's newest additions — handpicked worship music and inspiring albums added just for you
+                    Discover worship music that transcends boundaries — handpicked songs that elevate your spiritual journey
                 </p>
             </div>
             <div class="spotify-grid">
-                <div class="spotify-embed">
-                    <iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/68cBlYP88HRqH3K28bY8Zg?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+                <div class="media-player">
+                    <p class="track-label">Manginsauki</p>
+                    <div class="spotify-embed">
+                        <iframe data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/track/7tq9xQh1glkKkZMIGPhOiP?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+                    </div>
                 </div>
-                <div class="spotify-embed">
-                    <iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/7cvPYx9eqEDyg7LMfTliqP?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+                <div class="media-player">
+                    <p class="track-label">YekiJerusalem</p>
+                    <div class="spotify-embed">
+                        <iframe data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/track/1Ex8OyfYrsgWUshDZPvRiJ?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+                    </div>
                 </div>
-                <div class="spotify-embed">
-                    <iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/7tq9xQh1glkKkZMIGPhOiP?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+                <div class="media-player">
+                    <p class="track-label">Ubonakala</p>
+                    <div class="spotify-embed">
+                        <iframe data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/track/68cBlYP88HRqH3K28bY8Zg?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+                    </div>
                 </div>
-                <div class="spotify-embed">
-                    <iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/1Ex8OyfYrsgWUshDZPvRiJ?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+                <div class="media-player">
+                    <p class="track-label">Jesus Paid It All</p>
+                    <div class="spotify-embed">
+                        <iframe data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/track/7cvPYx9eqEDyg7LMfTliqP?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+                    </div>
                 </div>
             </div>
         </section>
@@ -676,7 +746,7 @@
                 <a href="#" title="Email" aria-label="Email">Email</a>
             </div>
             <p style="color: #666; margin-top: 1rem;">
-                © 2024 Adventist Music Hub | Bringing Sacred Sounds to Modern Audiences
+                © 2026 Adventist Music Hub | Bringing Sacred Sounds to Modern Audiences
             </p>
             <p style="color: #999; font-size: 0.85rem; margin-top: 0.5rem;">
                 All music links direct to official streaming platforms
