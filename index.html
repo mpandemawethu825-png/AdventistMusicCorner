@@ -19,19 +19,19 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             line-height: 1.6;
             color: #ffffff;
-            background: #121212;
+            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 50%, #0d0d0d 100%);
             min-height: 100vh;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
         }
 
         header {
-            background: #000000;
+            background: linear-gradient(90deg, #000000 0%, #0f0f0f 50%, #1DB954 100%);
             box-shadow: 0 2px 10px rgba(0,0,0,0.5);
             position: sticky;
             top: 0;
             z-index: 1000;
-            border-bottom: 1px solid #282828;
+            border-bottom: 2px solid #1DB954;
         }
 
         nav {
@@ -82,9 +82,10 @@
             padding: 3rem 1rem 2rem;
             text-align: center;
             color: white;
-            background: linear-gradient(180deg, #1DB954 0%, #121212 100%);
+            background: linear-gradient(135deg, #FF0000 0%, #1DB954 50%, #000000 100%);
             border-radius: 15px;
             margin-top: 1rem;
+            box-shadow: 0 10px 40px rgba(255, 0, 0, 0.3);
         }
 
         .hero h1 {
@@ -108,15 +109,19 @@
         }
 
         .section {
-            background: #181818;
+            background: linear-gradient(135deg, #181818 0%, #0f0f0f 100%);
             border-radius: 15px;
             padding: 2rem 1.5rem;
             margin-bottom: 1.5rem;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid #282828;
         }
 
         .section h2 {
-            color: #1DB954;
+            background: linear-gradient(90deg, #FF0000 0%, #1DB954 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             margin-bottom: 1.5rem;
             font-size: clamp(1.5rem, 4vw, 2rem);
             text-align: center;
@@ -132,11 +137,12 @@
         }
 
         .video-section {
-            background: #181818;
+            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
             border-radius: 15px;
             padding: 2rem 1.5rem;
             margin-bottom: 1.5rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 10px 30px rgba(255, 0, 0, 0.2);
+            border: 2px solid #FF0000;
         }
 
         .video-container {
@@ -159,11 +165,12 @@
         }
 
         .spotify-section {
-            background: #181818;
+            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
             border-radius: 15px;
             padding: 2rem 1.5rem;
             margin-bottom: 1.5rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 10px 30px rgba(29, 185, 84, 0.2);
+            border: 2px solid #1DB954;
         }
 
         .spotify-grid {
@@ -192,7 +199,10 @@
         }
 
         .track-label {
-            color: #1DB954;
+            background: linear-gradient(90deg, #FF0000 0%, #1DB954 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             font-size: 0.9rem;
             font-weight: 600;
             margin-bottom: 0.5rem;
@@ -203,7 +213,7 @@
             display: inline-block;
             margin-top: 1rem;
             padding: 0.8rem 1.8rem;
-            background: #1DB954;
+            background: linear-gradient(90deg, #1DB954 0%, #1ed760 100%);
             color: #000000;
             text-decoration: none;
             border-radius: 25px;
@@ -211,11 +221,13 @@
             font-size: 0.95rem;
             transition: all 0.3s;
             text-align: center;
+            box-shadow: 0 4px 15px rgba(29, 185, 84, 0.4);
         }
 
         .open-spotify-btn:hover {
-            background: #1ed760;
+            background: linear-gradient(90deg, #1ed760 0%, #1DB954 100%);
             transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(29, 185, 84, 0.6);
         }
 
         .open-spotify-btn:active {
@@ -223,20 +235,24 @@
         }
 
         .spotify-notice {
-            background: rgba(29, 185, 84, 0.1);
-            border: 1px solid #1DB954;
+            background: linear-gradient(135deg, rgba(29, 185, 84, 0.15) 0%, rgba(255, 0, 0, 0.1) 100%);
+            border: 2px solid;
+            border-image: linear-gradient(90deg, #1DB954 0%, #FF0000 100%) 1;
             border-radius: 10px;
             padding: 1rem;
             margin: 1.5rem auto;
             max-width: 700px;
             text-align: center;
-            color: #b3b3b3;
+            color: #ffffff;
             font-size: 0.9rem;
             line-height: 1.6;
         }
 
         .spotify-notice strong {
-            color: #1DB954;
+            background: linear-gradient(90deg, #1DB954 0%, #FF0000 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .video-container iframe,
@@ -256,7 +272,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.7);
+            background: linear-gradient(135deg, rgba(255, 0, 0, 0.7) 0%, rgba(29, 185, 84, 0.7) 100%);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -267,13 +283,14 @@
         }
 
         .play-overlay:hover {
-            background: rgba(0, 0, 0, 0.8);
+            background: linear-gradient(135deg, rgba(255, 0, 0, 0.85) 0%, rgba(29, 185, 84, 0.85) 100%);
         }
 
         .play-overlay::after {
             content: '▶';
             font-size: 4rem;
-            color: #1DB954;
+            color: #ffffff;
+            text-shadow: 0 0 20px rgba(29, 185, 84, 0.8);
         }
 
         .media-player.playing .play-overlay {
@@ -393,12 +410,13 @@
     <style>
 
         .latest-playlists {
-            background: #181818;
+            background: linear-gradient(135deg, #1DB954 0%, #0f0f0f 100%);
             color: white;
             padding: 2rem 1.5rem;
             border-radius: 15px;
             margin-bottom: 1.5rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 10px 30px rgba(29, 185, 84, 0.3);
+            border: 2px solid #1DB954;
         }
 
         .latest-playlists h2 {
@@ -416,21 +434,22 @@
         }
 
         .playlist-card {
-            background: #282828;
+            background: rgba(0, 0, 0, 0.6);
             backdrop-filter: blur(10px);
             padding: 1.5rem;
             border-radius: 12px;
             transition: all 0.3s;
-            border: 1px solid #282828;
+            border: 1px solid rgba(29, 185, 84, 0.3);
         }
 
         .playlist-card:active {
-            background: #333333;
+            background: rgba(0, 0, 0, 0.8);
             transform: scale(0.98);
         }
 
         .playlist-card:hover {
-            background: #333333;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #1DB954;
         }
 
         .playlist-card h3 {
@@ -717,11 +736,11 @@
         <nav>
             <div class="logo">Adventist Music Hub</div>
             <ul class="nav-links">
-                <li><a href="#home">Home</a></li>
-                <li><a href="#video">Featured</a></li>
-                <li><a href="#spotify">New Music</a></li>
-                <li><a href="#playlist">Playlist</a></li>
-                <li><a href="#platforms">Platforms</a></li>
+                <li><a href="#home" style="color: white;">Home</a></li>
+                <li><a href="#video" style="color: white;">Featured</a></li>
+                <li><a href="#spotify" style="color: white;">New Music</a></li>
+                <li><a href="#playlist" style="color: white;">Playlist</a></li>
+                <li><a href="#platforms" style="color: white;">Platforms</a></li>
             </ul>
         </nav>
     </header>
@@ -735,8 +754,8 @@
         <!-- Featured Video Section -->
         <section class="video-section" id="video">
             <div style="text-align: center; margin-bottom: 1rem;">
-                <span class="badge" style="background: #1DB954; color: #000000; font-weight: 700;">FEATURED</span>
-                <h2 style="margin-top: 0.5rem;">Our Featured Video</h2>
+                <span class="badge" style="background: linear-gradient(90deg, #FF0000 0%, #000000 100%); color: #ffffff; font-weight: 700; border: 1px solid #FF0000;">FEATURED</span>
+                <h2 style="margin-top: 0.5rem; background: linear-gradient(90deg, #FF0000 0%, #ffffff 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Our Featured Video</h2>
                 <p style="color: #b3b3b3; font-size: clamp(0.95rem, 2.5vw, 1.1rem); max-width: 700px; margin: 1rem auto 0; padding: 0 0.5rem; line-height: 1.6;">
                     Immerse yourself in this week's inspiring worship experience — beautifully crafted to uplift your spirit and draw you closer to God
                 </p>
@@ -756,17 +775,26 @@
         <!-- New This Week Section -->
         <section class="spotify-section" id="spotify">
             <div style="text-align: center; margin-bottom: 1rem;">
-                <span class="badge" style="background: #1DB954; color: #000000; font-weight: 700;">TRANSCENDENT SOUNDS</span>
-                <h2>Fresh Sounds & Worship</h2>
+                <span class="badge" style="background: linear-gradient(90deg, #1DB954 0%, #000000 100%); color: #ffffff; font-weight: 700; border: 1px solid #1DB954;">TRANSCENDENT SOUNDS</span>
+                <h2 style="background: linear-gradient(90deg, #1DB954 0%, #ffffff 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Fresh Sounds & Worship</h2>
                 <p style="color: #b3b3b3; font-size: clamp(0.95rem, 2.5vw, 1.05rem); max-width: 700px; margin: 1rem auto 0; padding: 0 0.5rem; line-height: 1.6;">
                     Discover worship music that transcends boundaries — handpicked songs that elevate your spiritual journey
                 </p>
             </div>
+
+            <div class="spotify-notice">
+                <strong>🎵 Full Songs on Spotify</strong><br>
+                Preview here • Click "Open in Spotify" for full playback
+            </div>
+
             <div class="spotify-grid">
                 <div class="media-player">
-                    <p class="track-label">Manginsauki</p>
+                    <p class="track-label">Mangingasuki</p>
                     <div class="spotify-embed">
                         <iframe data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/track/7tq9xQh1glkKkZMIGPhOiP?utm_source=generator&theme=0" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+                    </div>
+                    <div style="text-align: center;">
+                        <a href="https://open.spotify.com/track/7tq9xQh1glkKkZMIGPhOiP" target="_blank" class="open-spotify-btn">Open in Spotify</a>
                     </div>
                 </div>
                 <div class="media-player">
@@ -774,17 +802,26 @@
                     <div class="spotify-embed">
                         <iframe data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/track/1Ex8OyfYrsgWUshDZPvRiJ?utm_source=generator&theme=0" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
                     </div>
+                    <div style="text-align: center;">
+                        <a href="https://open.spotify.com/track/1Ex8OyfYrsgWUshDZPvRiJ" target="_blank" class="open-spotify-btn">Open in Spotify</a>
+                    </div>
                 </div>
                 <div class="media-player">
                     <p class="track-label">Ubonakala</p>
                     <div class="spotify-embed">
                         <iframe data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/track/68cBlYP88HRqH3K28bY8Zg?utm_source=generator&theme=0" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
                     </div>
+                    <div style="text-align: center;">
+                        <a href="https://open.spotify.com/track/68cBlYP88HRqH3K28bY8Zg" target="_blank" class="open-spotify-btn">Open in Spotify</a>
+                    </div>
                 </div>
                 <div class="media-player">
                     <p class="track-label">Jesus Paid It All</p>
                     <div class="spotify-embed">
                         <iframe data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/track/7cvPYx9eqEDyg7LMfTliqP?utm_source=generator&theme=0" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+                    </div>
+                    <div style="text-align: center;">
+                        <a href="https://open.spotify.com/track/7cvPYx9eqEDyg7LMfTliqP" target="_blank" class="open-spotify-btn">Open in Spotify</a>
                     </div>
                 </div>
             </div>
@@ -793,18 +830,21 @@
         <!-- Curated Playlist Section -->
         <section class="latest-playlists" id="playlist">
             <div style="text-align: center; margin-bottom: 1rem;">
-                <span class="badge" style="background: #1DB954; color: #000000; font-weight: 700;">CURATED FOR YOU</span>
-                <h2 style="color: #1DB954;">Featured Playlist</h2>
+                <span class="badge" style="background: linear-gradient(90deg, #1DB954 0%, #000000 100%); color: #ffffff; font-weight: 700; border: 1px solid #1DB954;">CURATED FOR YOU</span>
+                <h2 style="color: #ffffff; text-shadow: 0 0 20px rgba(29, 185, 84, 0.5);">Featured Playlist</h2>
                 <p style="font-size: clamp(0.95rem, 2.5vw, 1.05rem); max-width: 700px; margin: 1rem auto 0; opacity: 0.95; padding: 0 0.5rem; line-height: 1.6; color: #b3b3b3;">
                     Our handpicked collection for worship, devotion, and spiritual growth
                 </p>
             </div>
             
             <div style="max-width: 600px; margin: 2rem auto;">
-                <div class="playlist-card">
-                    <h3>Daily Worship Experience</h3>
-                    <p>Perfect songs for your daily devotion, reflection, and worship</p>
-                    <a href="https://open.spotify.com" target="_blank" class="playlist-link">Listen Now</a>
+                <div class="media-player">
+                    <div class="spotify-embed">
+                        <iframe data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/playlist/1VaE0iqNOS2WWcApQSnEO8?utm_source=generator&theme=0" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+                    </div>
+                    <div style="text-align: center;">
+                        <a href="https://open.spotify.com/playlist/1VaE0iqNOS2WWcApQSnEO8" target="_blank" class="playlist-link">Open Full Playlist in Spotify</a>
+                    </div>
                 </div>
             </div>
         </section>
