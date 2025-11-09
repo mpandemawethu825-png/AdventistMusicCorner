@@ -31,50 +31,46 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            padding: 0.75rem 1rem;
+            padding: 0.5rem 0.5rem;
         }
 
         .logo {
-            font-size: 1.25rem;
+            font-size: 1.1rem;
             font-weight: 700;
             background: linear-gradient(90deg, #ffffff 0%, #1877f2 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
             text-align: center;
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.5rem;
         }
 
         .nav-links {
             display: flex;
-            gap: 0.4rem;
+            gap: 0.25rem;
             list-style: none;
-            justify-content: center;
+            justify-content: space-between;
             flex-wrap: nowrap;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
-            padding: 0 0.5rem;
-        }
-
-        .nav-links::-webkit-scrollbar {
-            display: none;
+            overflow-x: hidden;
+            padding: 0 0.25rem;
         }
 
         .nav-links a {
             text-decoration: none;
             color: #fff;
             font-weight: 600;
-            padding: 0.45rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.75rem;
+            padding: 0.35rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.65rem;
             background: rgba(24, 119, 242, 0.12);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             border: 1px solid rgba(24, 119, 242, 0.2);
             transition: all 0.2s;
             white-space: nowrap;
-            flex-shrink: 0;
+            flex: 1;
+            text-align: center;
+            min-width: 0;
         }
 
         .nav-links a:active {
@@ -137,13 +133,35 @@
                         inset 0 1px 0 rgba(255, 255, 255, 0.05);
         }
 
-        .video-container iframe {
+        .video-container iframe,
+        .spotify-embed iframe {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             border: none;
+            loading: lazy;
+        }
+
+        /* Performance optimizations */
+        * {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        img, iframe {
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+        }
+
+        /* Reduce motion for performance */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
         }
 
         .track-info {
@@ -304,10 +322,31 @@
         }
 
         footer p {
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             color: #b0b3b8;
-            line-height: 1.6;
+            line-height: 1.4;
             margin-top: 0.5rem;
+            word-break: break-word;
+        }
+
+        @media (max-width: 380px) {
+            .nav-links a {
+                font-size: 0.6rem;
+                padding: 0.3rem 0.4rem;
+            }
+
+            .logo {
+                font-size: 1rem;
+            }
+
+            footer p {
+                font-size: 0.65rem;
+            }
+
+            .social-links a {
+                font-size: 0.75rem;
+                padding: 0.4rem 0.8rem;
+            }
         }
 
         @media (min-width: 768px) {
@@ -344,6 +383,12 @@
         /* Loading optimization */
         iframe {
             will-change: transform;
+            contain: layout style paint;
+        }
+
+        .video-container,
+        .spotify-embed {
+            contain: layout style paint;
         }
     </style>
 </head>
@@ -436,71 +481,90 @@
     <footer>
         <h3>Connect With Us</h3>
         <div class="social-links">
-            <a href="https://wa.me/27815228419" target="_blank">WhatsApp: 081 522 8419</a>
+            <a href="https://wa.me/27815228419" target="_blank">WhatsApp</a>
         </div>
         <p>© 2024 Adventist Music Hub</p>
-        <p>Contact: mpandemawethu825@gmail.com | 071 421 7169</p>
+        <p>mpandemawethu825@gmail.com</p>
+        <p>Phone: 071 421 7169 | WhatsApp: 081 522 8419</p>
     </footer>
 
     <script>
         let currentPlaying = null;
-        let players = [];
+        const players = [];
 
-        function stopAllPlayers(except) {
+        function forceStopPlayer(player) {
+            if (!player || !player.src) return;
+            
+            try {
+                const src = player.src;
+                player.src = 'about:blank';
+                
+                requestAnimationFrame(() => {
+                    player.src = src;
+                });
+            } catch (e) {
+                console.log('Stop player error:', e);
+            }
+        }
+
+        function stopAllExcept(exceptPlayer) {
             players.forEach(player => {
-                if (player !== except && player.src) {
-                    const originalSrc = player.src;
-                    player.src = '';
-                    setTimeout(() => {
-                        player.src = originalSrc;
-                    }, 50);
+                if (player !== exceptPlayer) {
+                    forceStopPlayer(player);
                 }
             });
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            players = Array.from(document.querySelectorAll('iframe'));
-            
-            players.forEach((iframe) => {
+        function handlePlayerInteraction(targetPlayer) {
+            if (currentPlaying !== targetPlayer) {
+                stopAllExcept(targetPlayer);
+                currentPlaying = targetPlayer;
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', function() {
+            // Gather all players
+            document.querySelectorAll('iframe').forEach(iframe => {
+                players.push(iframe);
+                
                 const container = iframe.closest('.video-container, .spotify-embed');
                 if (container) {
-                    // Click detection
-                    container.addEventListener('click', function() {
-                        if (currentPlaying !== iframe) {
-                            stopAllPlayers(iframe);
-                            currentPlaying = iframe;
-                        }
-                    });
-
-                    // Touch detection for mobile
-                    container.addEventListener('touchstart', function() {
-                        if (currentPlaying !== iframe) {
-                            stopAllPlayers(iframe);
-                            currentPlaying = iframe;
-                        }
+                    ['click', 'touchstart', 'touchend'].forEach(eventType => {
+                        container.addEventListener(eventType, function(e) {
+                            handlePlayerInteraction(iframe);
+                        }, { passive: true });
                     });
                 }
             });
 
-            // Detect iframe focus (when user clicks play inside iframe)
+            // Detect when iframe gets focus
             window.addEventListener('blur', function() {
-                const activeElement = document.activeElement;
-                if (activeElement && activeElement.tagName === 'IFRAME') {
-                    if (currentPlaying !== activeElement) {
-                        stopAllPlayers(activeElement);
-                        currentPlaying = activeElement;
+                const active = document.activeElement;
+                if (active && active.tagName === 'IFRAME' && players.includes(active)) {
+                    handlePlayerInteraction(active);
+                }
+            });
+
+            // Polling fallback for mobile
+            let checkCount = 0;
+            const checkInterval = setInterval(function() {
+                const active = document.activeElement;
+                if (active && active.tagName === 'IFRAME' && players.includes(active)) {
+                    if (currentPlaying !== active) {
+                        handlePlayerInteraction(active);
                     }
                 }
-            });
+                
+                checkCount++;
+                if (checkCount > 300) clearInterval(checkInterval);
+            }, 500);
 
-            // Additional detection for mobile
-            setInterval(function() {
-                const activeElement = document.activeElement;
-                if (activeElement && activeElement.tagName === 'IFRAME' && currentPlaying !== activeElement) {
-                    stopAllPlayers(activeElement);
-                    currentPlaying = activeElement;
+            // Stop on page visibility change
+            document.addEventListener('visibilitychange', function() {
+                if (document.hidden && currentPlaying) {
+                    forceStopPlayer(currentPlaying);
                 }
-            }, 1000);
+            });
         });
     </script>
 </body>
