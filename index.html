@@ -135,23 +135,22 @@
             border-radius: 12px;
             margin-bottom: 0.75rem;
             background: #000;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5),
-                        inset 0 1px 0 rgba(255, 255, 255, 0.05);
-            transform: translateZ(0);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            transform: translate3d(0,0,0);
             will-change: contents;
         }
 
-        .video-container iframe,
-        .spotify-embed iframe {
+        .video-container iframe {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             border: none;
-            transform: translateZ(0);
+            transform: translate3d(0,0,0);
             backface-visibility: hidden;
             -webkit-backface-visibility: hidden;
+            pointer-events: auto;
         }
 
         /* Performance optimizations */
@@ -167,11 +166,21 @@
 
         /* Hardware acceleration */
         .section,
-        .music-player,
-        .platform-card {
-            transform: translateZ(0);
+        .music-player {
+            transform: translate3d(0,0,0);
             backface-visibility: hidden;
             -webkit-backface-visibility: hidden;
+            perspective: 1000px;
+        }
+
+        /* Button optimization */
+        .btn {
+            transform: translate3d(0,0,0);
+            backface-visibility: hidden;
+        }
+
+        .btn:active {
+            transform: translate3d(0,0,0) scale(0.97);
         }
 
         /* Reduce motion for performance */
@@ -430,7 +439,6 @@
             <li><a href="#video">Video</a></li>
             <li><a href="#tracks">Tracks</a></li>
             <li><a href="#album">Album</a></li>
-            <li><a href="#playlist">Playlist</a></li>
         </ul>
     </header>
 
@@ -482,30 +490,6 @@
             </div>
             <a href="https://music.youtube.com/playlist?list=OLAK5uy_mMX1TjqsZ6vMXbyJi0cDUYnSRr8pG2r_Y" target="_blank" class="btn">Open Full Album</a>
         </section>
-
-        <section class="section" id="playlist">
-            <h2>Featured Playlist</h2>
-            <div class="spotify-embed">
-                <iframe src="https://open.spotify.com/embed/playlist/6GGU53YxX8dPg25yqQUNxw?utm_source=generator&theme=0" frameBorder="0" allowfullscreen allow="clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-            </div>
-            <a href="https://open.spotify.com/playlist/6GGU53YxX8dPg25yqQUNxw" target="_blank" class="btn">Open in Spotify</a>
-        </section>
-
-        <section class="section">
-            <h2>Stream Everywhere</h2>
-            
-            <div class="platform-card">
-                <h3>Spotify</h3>
-                <p>Curated Adventist playlists</p>
-                <a href="https://open.spotify.com" target="_blank" class="btn">Open Spotify</a>
-            </div>
-
-            <div class="platform-card">
-                <h3>YouTube Music</h3>
-                <p>Watch videos and live worship</p>
-                <a href="https://music.youtube.com" target="_blank" class="btn">Open YouTube Music</a>
-            </div>
-        </section>
     </div>
 
     <footer>
@@ -519,118 +503,66 @@
     </footer>
 
     <script>
-        const players = new Map();
-        let currentPlaying = null;
-        let isProcessing = false;
+        let players = [];
+        let active = null;
+        let lock = false;
 
-        const forceStop = (player) => {
-            if (!player?.contentWindow) return;
+        const stop = (p) => {
+            if (!p || lock) return;
+            lock = true;
             
-            try {
-                // YouTube API stop command
-                player.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
-                // Spotify API pause command
-                player.contentWindow.postMessage('{"method":"pause"}', '*');
-            } catch (e) {}
+            // Kill immediately
+            p.contentWindow?.postMessage('{"event":"command","func":"stopVideo","args":""}', '*');
+            p.src = '';
             
-            // Force reload as fallback
-            const src = player.src;
-            player.src = 'about:blank';
-            requestAnimationFrame(() => {
-                player.src = src;
-            });
+            setTimeout(() => {
+                p.src = p.dataset.src;
+                lock = false;
+            }, 5);
         };
 
-        const stopAllExcept = (exceptPlayer) => {
-            if (isProcessing) return;
-            isProcessing = true;
-
-            players.forEach((player, key) => {
-                if (player !== exceptPlayer && player !== null) {
-                    forceStop(player);
-                }
-            });
-
-            requestAnimationFrame(() => {
-                isProcessing = false;
-            });
+        const stopAll = (keep) => {
+            players.forEach(p => p !== keep && stop(p));
         };
 
-        const handlePlayerStart = (targetPlayer) => {
-            if (currentPlaying === targetPlayer) return;
-            
-            stopAllExcept(targetPlayer);
-            currentPlaying = targetPlayer;
+        const start = (p) => {
+            if (active === p) return;
+            stopAll(p);
+            active = p;
         };
 
-        // Initialize on load
-        window.addEventListener('load', () => {
-            const iframes = document.querySelectorAll('iframe');
+        window.onload = () => {
+            players = Array.from(document.querySelectorAll('iframe'));
             
-            iframes.forEach((iframe, index) => {
-                players.set(index, iframe);
-                
-                const container = iframe.closest('.video-container, .spotify-embed');
-                if (!container) return;
+            players.forEach(p => {
+                p.dataset.src = p.src;
+                const c = p.closest('.video-container');
+                if (!c) return;
 
-                // Touch and click detection
-                ['touchstart', 'click', 'pointerdown'].forEach(evt => {
-                    container.addEventListener(evt, () => {
-                        requestAnimationFrame(() => handlePlayerStart(iframe));
-                    }, { passive: true, capture: true });
-                });
+                c.ontouchstart = c.onmousedown = () => start(p);
             });
 
-            // Detect iframe interaction
-            let lastActive = null;
-            const checkActive = () => {
-                const active = document.activeElement;
-                
-                if (active?.tagName === 'IFRAME' && active !== lastActive) {
-                    lastActive = active;
-                    
-                    players.forEach((player, key) => {
-                        if (player === active) {
-                            handlePlayerStart(player);
-                        }
-                    });
+            // Focus check
+            let prev = null;
+            const chk = () => {
+                const f = document.activeElement;
+                if (f?.tagName === 'IFRAME' && f !== prev) {
+                    prev = f;
+                    start(f);
                 }
             };
 
-            window.addEventListener('blur', checkActive, { passive: true });
-            
-            // Polling for mobile devices
-            let checks = 0;
-            const pollInterval = setInterval(() => {
-                checkActive();
-                if (++checks > 180) clearInterval(pollInterval);
-            }, 800);
+            window.onblur = chk;
+            setInterval(chk, 800);
 
-            // Stop all on page hide
-            document.addEventListener('visibilitychange', () => {
+            // Stop on hide
+            document.onvisibilitychange = () => {
                 if (document.hidden) {
-                    players.forEach(player => forceStop(player));
-                    currentPlaying = null;
+                    players.forEach(stop);
+                    active = null;
                 }
-            }, { passive: true });
-
-            // Message listener for iframe events
-            window.addEventListener('message', (event) => {
-                try {
-                    const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
-                    
-                    // Detect YouTube play event
-                    if (data.event === 'onStateChange' && data.info === 1) {
-                        players.forEach((player, key) => {
-                            if (player.contentWindow === event.source) {
-                                handlePlayerStart(player);
-                            }
-                        });
-                    }
-                } catch (e) {}
-            }, { passive: true });
-
-        }, { once: true, passive: true });
+            };
+        };
     </script>
 </body>
 </html>
