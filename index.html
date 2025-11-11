@@ -14,6 +14,11 @@
             -webkit-tap-highlight-color: transparent;
         }
 
+        html {
+            -webkit-text-size-adjust: 100%;
+            text-rendering: optimizeSpeed;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             line-height: 1.5;
@@ -21,6 +26,7 @@
             background: #0a0a0a;
             -webkit-font-smoothing: antialiased;
             overflow-x: hidden;
+            text-rendering: optimizeSpeed;
         }
 
         header {
@@ -131,6 +137,8 @@
             background: #000;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5),
                         inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            transform: translateZ(0);
+            will-change: contents;
         }
 
         .video-container iframe,
@@ -141,7 +149,9 @@
             width: 100%;
             height: 100%;
             border: none;
-            loading: lazy;
+            transform: translateZ(0);
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
         }
 
         /* Performance optimizations */
@@ -153,6 +163,15 @@
         img, iframe {
             image-rendering: -webkit-optimize-contrast;
             image-rendering: crisp-edges;
+        }
+
+        /* Hardware acceleration */
+        .section,
+        .music-player,
+        .platform-card {
+            transform: translateZ(0);
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
         }
 
         /* Reduce motion for performance */
@@ -214,6 +233,8 @@
             margin-bottom: 0.75rem;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4),
                         inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            transform: translateZ(0);
+            will-change: contents;
         }
 
         .spotify-embed iframe {
@@ -382,13 +403,22 @@
 
         /* Loading optimization */
         iframe {
-            will-change: transform;
-            contain: layout style paint;
+            will-change: auto;
+            contain: strict;
         }
 
         .video-container,
         .spotify-embed {
-            contain: layout style paint;
+            contain: content;
+            content-visibility: auto;
+        }
+
+        /* Optimize animations */
+        .btn,
+        .nav-links a,
+        .social-links a,
+        .platform-card {
+            will-change: auto;
         }
     </style>
 </head>
@@ -489,83 +519,118 @@
     </footer>
 
     <script>
+        const players = new Map();
         let currentPlaying = null;
-        const players = [];
+        let isProcessing = false;
 
-        function forceStopPlayer(player) {
-            if (!player || !player.src) return;
+        const forceStop = (player) => {
+            if (!player?.contentWindow) return;
             
             try {
-                const src = player.src;
-                player.src = 'about:blank';
-                
-                requestAnimationFrame(() => {
-                    player.src = src;
-                });
-            } catch (e) {
-                console.log('Stop player error:', e);
-            }
-        }
+                // YouTube API stop command
+                player.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+                // Spotify API pause command
+                player.contentWindow.postMessage('{"method":"pause"}', '*');
+            } catch (e) {}
+            
+            // Force reload as fallback
+            const src = player.src;
+            player.src = 'about:blank';
+            requestAnimationFrame(() => {
+                player.src = src;
+            });
+        };
 
-        function stopAllExcept(exceptPlayer) {
-            players.forEach(player => {
-                if (player !== exceptPlayer) {
-                    forceStopPlayer(player);
+        const stopAllExcept = (exceptPlayer) => {
+            if (isProcessing) return;
+            isProcessing = true;
+
+            players.forEach((player, key) => {
+                if (player !== exceptPlayer && player !== null) {
+                    forceStop(player);
                 }
             });
-        }
 
-        function handlePlayerInteraction(targetPlayer) {
-            if (currentPlaying !== targetPlayer) {
-                stopAllExcept(targetPlayer);
-                currentPlaying = targetPlayer;
-            }
-        }
+            requestAnimationFrame(() => {
+                isProcessing = false;
+            });
+        };
 
-        window.addEventListener('DOMContentLoaded', function() {
-            // Gather all players
-            document.querySelectorAll('iframe').forEach(iframe => {
-                players.push(iframe);
+        const handlePlayerStart = (targetPlayer) => {
+            if (currentPlaying === targetPlayer) return;
+            
+            stopAllExcept(targetPlayer);
+            currentPlaying = targetPlayer;
+        };
+
+        // Initialize on load
+        window.addEventListener('load', () => {
+            const iframes = document.querySelectorAll('iframe');
+            
+            iframes.forEach((iframe, index) => {
+                players.set(index, iframe);
                 
                 const container = iframe.closest('.video-container, .spotify-embed');
-                if (container) {
-                    ['click', 'touchstart', 'touchend'].forEach(eventType => {
-                        container.addEventListener(eventType, function(e) {
-                            handlePlayerInteraction(iframe);
-                        }, { passive: true });
+                if (!container) return;
+
+                // Touch and click detection
+                ['touchstart', 'click', 'pointerdown'].forEach(evt => {
+                    container.addEventListener(evt, () => {
+                        requestAnimationFrame(() => handlePlayerStart(iframe));
+                    }, { passive: true, capture: true });
+                });
+            });
+
+            // Detect iframe interaction
+            let lastActive = null;
+            const checkActive = () => {
+                const active = document.activeElement;
+                
+                if (active?.tagName === 'IFRAME' && active !== lastActive) {
+                    lastActive = active;
+                    
+                    players.forEach((player, key) => {
+                        if (player === active) {
+                            handlePlayerStart(player);
+                        }
                     });
                 }
-            });
+            };
 
-            // Detect when iframe gets focus
-            window.addEventListener('blur', function() {
-                const active = document.activeElement;
-                if (active && active.tagName === 'IFRAME' && players.includes(active)) {
-                    handlePlayerInteraction(active);
+            window.addEventListener('blur', checkActive, { passive: true });
+            
+            // Polling for mobile devices
+            let checks = 0;
+            const pollInterval = setInterval(() => {
+                checkActive();
+                if (++checks > 180) clearInterval(pollInterval);
+            }, 800);
+
+            // Stop all on page hide
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    players.forEach(player => forceStop(player));
+                    currentPlaying = null;
                 }
-            });
+            }, { passive: true });
 
-            // Polling fallback for mobile
-            let checkCount = 0;
-            const checkInterval = setInterval(function() {
-                const active = document.activeElement;
-                if (active && active.tagName === 'IFRAME' && players.includes(active)) {
-                    if (currentPlaying !== active) {
-                        handlePlayerInteraction(active);
+            // Message listener for iframe events
+            window.addEventListener('message', (event) => {
+                try {
+                    const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+                    
+                    // Detect YouTube play event
+                    if (data.event === 'onStateChange' && data.info === 1) {
+                        players.forEach((player, key) => {
+                            if (player.contentWindow === event.source) {
+                                handlePlayerStart(player);
+                            }
+                        });
                     }
-                }
-                
-                checkCount++;
-                if (checkCount > 300) clearInterval(checkInterval);
-            }, 500);
+                } catch (e) {}
+            }, { passive: true });
 
-            // Stop on page visibility change
-            document.addEventListener('visibilitychange', function() {
-                if (document.hidden && currentPlaying) {
-                    forceStopPlayer(currentPlaying);
-                }
-            });
-        });
+        }, { once: true, passive: true });
     </script>
 </body>
 </html>
