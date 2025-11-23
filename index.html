@@ -446,13 +446,12 @@
 
     <div class="container">
         <div class="notice">
-            <strong>Note:</strong> We are using the YouTube IFrame Player API for reliable "one song at a time" playback control.
+            <strong>Note:</strong> Only one video plays at a time - others pause automatically on both desktop and mobile.
         </div>
 
         <section class="section" id="video">
             <h2>Featured Video</h2>
             <div class="video-container">
-                <!-- Added ID for API control -->
                 <iframe id="video-main" src="https://www.youtube.com/embed/22C0IJ-ZU_U?enablejsapi=1&rel=0" title="Featured Video" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
             </div>
             <a href="https://www.youtube.com/watch?v=22C0IJ-ZU_U" target="_blank" class="btn">Watch on YouTube</a>
@@ -464,7 +463,6 @@
             <div class="music-player">
                 <div class="track-label">Thabatha by Noted</div>
                 <div class="video-container">
-                    <!-- Added ID for API control -->
                     <iframe id="track-1" src="https://www.youtube.com/embed/7PVyRkshQ68?enablejsapi=1&rel=0" title="Thabatha" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
                 </div>
                 <a href="https://music.youtube.com/watch?v=7PVyRkshQ68" target="_blank" class="btn">Open in YouTube Music</a>
@@ -473,7 +471,6 @@
             <div class="music-player">
                 <div class="track-label">Ubonakala by Noted</div>
                 <div class="video-container">
-                    <!-- Added ID for API control -->
                     <iframe id="track-2" src="https://www.youtube.com/embed/ohvs0gfbphg?enablejsapi=1&rel=0" title="Ubonakala" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
                 </div>
                 <a href="https://music.youtube.com/watch?v=ohvs0gfbphg" target="_blank" class="btn">Open in YouTube Music</a>
@@ -482,7 +479,6 @@
             <div class="music-player">
                 <div class="track-label">Kuya kubakho Uvuyo by Glorious Sounds</div>
                 <div class="video-container">
-                    <!-- Added ID for API control -->
                     <iframe id="track-3" src="https://www.youtube.com/embed/_E8whejqIWg?enablejsapi=1&rel=0" title="Kuya kubakho Uvuyo" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
                 </div>
                 <a href="https://music.youtube.com/watch?v=_E8whejqIWg" target="_blank" class="btn">Open in YouTube Music</a>
@@ -492,7 +488,6 @@
         <section class="section" id="album">
             <h2>Featured Album</h2>
             <div class="video-container">
-                <!-- Added ID for API control -->
                 <iframe id="album-main" src="https://www.youtube.com/embed/videoseries?list=OLAK5uy_mMX1TjqsZ6vMXbyJi0cDUYnSRr8pG2r_Y&enablejsapi=1" title="Featured Album" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
             </div>
             <a href="https://music.youtube.com/playlist?list=OLAK5uy_mMX1TjqsZ6vMXbyJi0cDUYnSRr8pG2r_Y" target="_blank" class="btn">Open Full Album</a>
@@ -510,79 +505,129 @@
     </footer>
 
     <script>
-        // Array to hold the YouTube Player objects initialized by the API
-        let playerObjects = [];
-        let activePlayer = null;
+        // Map to hold YouTube Player objects by their iframe ID
+        const playerMap = new Map();
+        let activePlayerId = null;
+        let isInitialized = false;
 
         /**
-         * Safely stops a YouTube Player object if it's currently playing.
-         * @param {YT.Player} player - The YouTube Player object to stop.
+         * Immediately pauses a YouTube Player with error handling
+         * @param {YT.Player} player - The YouTube Player object to pause
+         * @param {string} playerId - The ID of the player for logging
          */
-        const stopPlayer = (player) => {
-            if (player && player.getPlayerState) {
-                const state = player.getPlayerState();
-                // State 1: Playing, State 3: Buffering
-                if (state === 1 || state === 3) { 
-                    try {
-                        player.stopVideo();
-                    } catch (e) {
-                        // Console error for debugging, but prevent UI crash
-                        console.error("Error stopping player:", e);
-                    }
-                }
+        const pausePlayer = (player, playerId) => {
+            if (!player || !player.pauseVideo) return;
+            
+            try {
+                // Use pauseVideo instead of stopVideo for instant response
+                player.pauseVideo();
+            } catch (e) {
+                console.error(`Error pausing player ${playerId}:`, e);
             }
         };
 
         /**
-         * Stops all YouTube players except the one specified.
-         * @param {YT.Player} keepPlayer - The player to keep running (the one that just started).
+         * Pauses all players except the one specified - executes immediately
+         * @param {string} keepPlayerId - The ID of the player to keep playing
          */
-        const stopAllPlayers = (keepPlayer) => {
-            playerObjects.forEach(player => {
-                if (player !== keepPlayer) {
-                    stopPlayer(player);
+        const pauseAllExcept = (keepPlayerId) => {
+            playerMap.forEach((player, playerId) => {
+                if (playerId !== keepPlayerId) {
+                    pausePlayer(player, playerId);
                 }
             });
         };
 
         /**
-         * Called automatically by the YouTube API when a player's state changes.
-         * This is the core logic for ensuring only one video plays.
-         * @param {Object} event - The YouTube Player event object.
+         * Called when any player's state changes
+         * Implements instant single-player logic
          */
         function onPlayerStateChange(event) {
-            // State 1 is Playing
-            if (event.data === YT.PlayerState.PLAYING) {
-                // The event target is the player that just started playing
-                activePlayer = event.target;
-                stopAllPlayers(activePlayer);
+            const player = event.target;
+            const iframe = player.getIframe();
+            const playerId = iframe ? iframe.id : null;
+
+            if (!playerId) return;
+
+            // When a video starts playing (state 1) or buffering to play (state 3)
+            if (event.data === YT.PlayerState.PLAYING || event.data === YT.PlayerState.BUFFERING) {
+                // Immediately pause all other players before this one fully starts
+                if (activePlayerId !== playerId) {
+                    pauseAllExcept(playerId);
+                    activePlayerId = playerId;
+                }
             }
-            
-            // If the active player stops (Paused or Ended), clear the active state
-            if ((event.data === YT.PlayerState.ENDED || event.data === YT.PlayerState.PAUSED) && activePlayer === event.target) {
-                activePlayer = null;
+
+            // Clear active player when it ends or is paused
+            if ((event.data === YT.PlayerState.ENDED || event.data === YT.PlayerState.PAUSED) && activePlayerId === playerId) {
+                activePlayerId = null;
             }
         }
 
         /**
-         * Called automatically by the YouTube IFrame API when the API code is downloaded and ready.
-         * This function initializes all the embedded YouTube iframes as controllable YT.Player objects.
+         * Called when a player is ready - adds touch/click listeners for mobile
+         */
+        function onPlayerReady(event) {
+            const player = event.target;
+            const iframe = player.getIframe();
+            
+            if (iframe) {
+                // Add container click detection for mobile devices
+                const container = iframe.closest('.video-container');
+                if (container) {
+                    // Detect when user interacts with the video container
+                    container.addEventListener('touchstart', function() {
+                        const playerId = iframe.id;
+                        // Pre-emptively pause others when user touches this player
+                        pauseAllExcept(playerId);
+                    }, { passive: true });
+                }
+            }
+        }
+
+        /**
+         * Initialize all YouTube players when API is ready
          */
         window.onYouTubeIframeAPIReady = function() {
-            // Select all iframes that look like YouTube embeds (based on your structure)
+            if (isInitialized) return;
+            isInitialized = true;
+
+            // Get all YouTube iframes
             const iframes = document.querySelectorAll('iframe[id^="video-"], iframe[id^="track-"], iframe[id^="album-"]');
             
             iframes.forEach((iframe) => {
-                // Initialize a new YouTube Player for the iframe using its ID
-                const player = new YT.Player(iframe.id, {
-                    events: {
-                        // Attach the state change listener for the single-player logic
-                        'onStateChange': onPlayerStateChange,
-                    }
-                });
-                playerObjects.push(player);
+                if (!iframe.id) return;
+                
+                try {
+                    // Create player with both state change and ready listeners
+                    const player = new YT.Player(iframe.id, {
+                        events: {
+                            'onStateChange': onPlayerStateChange,
+                            'onReady': onPlayerReady
+                        }
+                    });
+                    
+                    playerMap.set(iframe.id, player);
+                } catch (e) {
+                    console.error(`Error initializing player ${iframe.id}:`, e);
+                }
             });
         };
+
+        // Fallback: if API is already loaded before this script runs
+        if (window.YT && window.YT.Player) {
+            window.onYouTubeIframeAPIReady();
+        }
+
+        // Additional mobile optimization: pause all on page visibility change
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden && activePlayerId) {
+                const activePlayer = playerMap.get(activePlayerId);
+                if (activePlayer) {
+                    pausePlayer(activePlayer, activePlayerId);
+                }
+            }
+        });
     </script>
 </body>
 </html>
