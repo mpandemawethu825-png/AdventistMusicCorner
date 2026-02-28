@@ -5,8 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>JobMatch SA</title>
 
-<!-- PDF & DOCX Parsers -->
+<!-- PDF.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+
+<!-- Mammoth for DOCX -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.21/mammoth.browser.min.js"></script>
 
 <style>
@@ -16,16 +18,15 @@
   --light:#f8fafc;
 }
 body {
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
   margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
   background:var(--light);
-  color:#111;
 }
 header {
   background:var(--primary);
   color:white;
-  padding:20px;
   text-align:center;
+  padding:20px;
 }
 .container {
   max-width:900px;
@@ -33,14 +34,11 @@ header {
   padding:20px;
 }
 .upload-box {
-  border:2px dashed var(--accent);
-  padding:30px;
-  text-align:center;
-  border-radius:12px;
   background:white;
-}
-input[type=file] {
-  margin-top:15px;
+  padding:30px;
+  border-radius:12px;
+  border:2px dashed var(--accent);
+  text-align:center;
 }
 button {
   background:var(--accent);
@@ -49,14 +47,12 @@ button {
   padding:12px 20px;
   border-radius:8px;
   cursor:pointer;
-  margin-top:15px;
 }
 button:disabled {
   background:gray;
 }
-.loading {
-  margin-top:20px;
-}
+.loading { margin-top:15px; }
+.error { color:red; }
 .job-card {
   background:white;
   padding:15px;
@@ -65,14 +61,11 @@ button:disabled {
   box-shadow:0 4px 10px rgba(0,0,0,0.05);
 }
 .match {
-  font-weight:bold;
   color:green;
-}
-.error {
-  color:red;
+  font-weight:bold;
 }
 @media(max-width:600px){
-  .job-card { font-size:14px; }
+  .job-card{font-size:14px;}
 }
 </style>
 </head>
@@ -80,16 +73,15 @@ button:disabled {
 
 <header>
   <h1>JobMatch SA</h1>
-  <p>Upload your CV and get matched with real South African jobs instantly.</p>
+  <p>Upload your CV. Get matched instantly.</p>
 </header>
 
 <div class="container">
 
 <div class="upload-box">
   <h3>Upload CV (PDF or DOCX, max 5MB)</h3>
-  <input type="file" id="cvFile" accept=".pdf,.docx">
-  <br>
-  <button onclick="processCV()">Find My Jobs</button>
+  <input type="file" id="cvFile" accept=".pdf,.docx"><br><br>
+  <button onclick="processCV()">Find Jobs</button>
   <div class="loading" id="loading"></div>
   <div class="error" id="error"></div>
 </div>
@@ -101,58 +93,54 @@ button:disabled {
 <script>
 
 const MAX_SIZE = 5 * 1024 * 1024;
-const OPENAI_PROXY_ENDPOINT = "/api/analyze-cv"; 
 
 async function processCV() {
-  const fileInput = document.getElementById("cvFile");
-  const file = fileInput.files[0];
+  const file = document.getElementById("cvFile").files[0];
   const errorDiv = document.getElementById("error");
-  errorDiv.innerText = "";
+  errorDiv.innerText="";
 
-  if (!file) return errorDiv.innerText = "Please upload a CV.";
-  if (file.size > MAX_SIZE) return errorDiv.innerText = "File exceeds 5MB.";
+  if(!file) return errorDiv.innerText="Please upload a CV.";
+  if(file.size>MAX_SIZE) return errorDiv.innerText="File exceeds 5MB.";
 
-  showLoading("Extracting text...");
+  showLoading("Extracting CV text...");
 
-  let text = "";
-  if (file.type === "application/pdf") {
+  let text="";
+  if(file.type==="application/pdf"){
     text = await extractPDF(file);
-  } else if (file.name.endsWith(".docx")) {
+  } else if(file.name.endsWith(".docx")){
     text = await extractDOCX(file);
   } else {
-    return errorDiv.innerText = "Unsupported file format.";
+    return errorDiv.innerText="Unsupported file format.";
   }
 
-  if (!text) return errorDiv.innerText = "Could not extract text.";
+  showLoading("Analyzing CV...");
 
-  showLoading("Analyzing CV with AI...");
+  const profile = analyzeText(text);
 
-  const structuredData = await analyzeCV(text);
+  showLoading("Fetching job listings...");
 
-  showLoading("Searching jobs...");
-
-  const jobs = await fetchJobs(structuredData);
+  const jobs = await fetchJobs(profile);
 
   showLoading("Matching jobs...");
 
-  const rankedJobs = matchJobs(structuredData, jobs);
+  const ranked = matchJobs(profile,jobs);
 
-  displayJobs(rankedJobs);
+  displayJobs(ranked);
 
-  fileInput.value = "";
+  document.getElementById("cvFile").value="";
 }
 
-async function extractPDF(file) {
+async function extractPDF(file){
   const reader = new FileReader();
   return new Promise(resolve=>{
-    reader.onload = async function() {
-      const typedArray = new Uint8Array(this.result);
-      const pdf = await pdfjsLib.getDocument(typedArray).promise;
-      let text = "";
+    reader.onload=async function(){
+      const typedArray=new Uint8Array(this.result);
+      const pdf=await pdfjsLib.getDocument(typedArray).promise;
+      let text="";
       for(let i=1;i<=pdf.numPages;i++){
-        const page = await pdf.getPage(i);
-        const content = await page.getTextContent();
-        text += content.items.map(i=>i.str).join(" ");
+        const page=await pdf.getPage(i);
+        const content=await page.getTextContent();
+        text+=content.items.map(i=>i.str).join(" ");
       }
       resolve(text);
     };
@@ -160,51 +148,68 @@ async function extractPDF(file) {
   });
 }
 
-async function extractDOCX(file) {
-  const arrayBuffer = await file.arrayBuffer();
-  const result = await mammoth.extractRawText({arrayBuffer});
+async function extractDOCX(file){
+  const buffer=await file.arrayBuffer();
+  const result=await mammoth.extractRawText({arrayBuffer:buffer});
   return result.value;
 }
 
-async function analyzeCV(text) {
-  const response = await fetch(OPENAI_PROXY_ENDPOINT,{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({cvText:text})
-  });
-  return await response.json();
+/* RULE-BASED CV ANALYZER */
+
+function analyzeText(text){
+  const lower=text.toLowerCase();
+
+  const techSkills=["javascript","python","excel","sql","react","node","marketing","sales","accounting","customer service"];
+  const foundSkills=techSkills.filter(skill=>lower.includes(skill));
+
+  const locationMatch=text.match(/(Cape Town|Johannesburg|Durban|Pretoria|Port Elizabeth)/i);
+  const location=locationMatch?locationMatch[0]:"South Africa";
+
+  let experienceLevel="Entry";
+  if(lower.includes("5 years")||lower.includes("6 years")||lower.includes("7 years")) experienceLevel="Senior";
+  else if(lower.includes("3 years")||lower.includes("4 years")) experienceLevel="Mid";
+  else if(lower.includes("1 year")||lower.includes("2 years")) experienceLevel="Junior";
+
+  return {
+    skills:foundSkills,
+    location,
+    experienceLevel
+  };
 }
 
-/* Sample public compliant source (Remotive demo as placeholder)
-   Replace with SA compliant job APIs (e.g. RapidAPI Indeed, Adzuna SA API) */
+/* PUBLIC JOB SOURCE (Demo) */
 
 async function fetchJobs(profile){
-  const query = profile.industry + " " + profile.experience_level;
-  const response = await fetch("https://remotive.com/api/remote-jobs?search="+encodeURIComponent(query));
-  const data = await response.json();
+  const query=profile.skills.join(" ");
+  const response=await fetch("https://remotive.com/api/remote-jobs?search="+encodeURIComponent(query));
+  const data=await response.json();
+
   return data.jobs.slice(0,30).map(job=>({
     title:job.title,
     company:job.company_name,
     location:job.candidate_required_location,
-    salary:job.salary || "Not specified",
-    apply_link:job.url,
-    source:"Remotive"
+    salary:job.salary||"Not specified",
+    apply:job.url
   }));
 }
 
+/* WEIGHTED MATCHING */
+
 function matchJobs(profile,jobs){
   return jobs.map(job=>{
-    let score = 0;
+    let score=0;
 
-    const skillMatch = profile.skills.technical.filter(skill=>
-      job.title.toLowerCase().includes(skill.toLowerCase())
-    ).length;
+    const titleLower=job.title.toLowerCase();
 
-    score += (skillMatch/profile.skills.technical.length)*40;
+    profile.skills.forEach(skill=>{
+      if(titleLower.includes(skill)) score+=40/profile.skills.length;
+    });
 
     if(job.location.includes(profile.location)) score+=20;
-    if(profile.experience_level==="Senior") score+=30;
-    if(profile.education_level) score+=10;
+
+    if(profile.experienceLevel==="Senior") score+=30;
+    if(profile.experienceLevel==="Mid") score+=20;
+    if(profile.experienceLevel==="Junior") score+=10;
 
     return {...job,match:Math.round(score)};
   })
@@ -214,26 +219,25 @@ function matchJobs(profile,jobs){
 
 function displayJobs(jobs){
   hideLoading();
-  const container = document.getElementById("results");
+  const container=document.getElementById("results");
   container.innerHTML="";
 
   if(jobs.length===0){
-    container.innerHTML="<p>No high-confidence matches found.</p>";
+    container.innerHTML="<p>No strong matches found. Try updating your CV keywords.</p>";
     return;
   }
 
   jobs.forEach(job=>{
-    container.innerHTML += `
+    container.innerHTML+=`
       <div class="job-card">
         <div class="match">${job.match}% Match</div>
         <h3>${job.title}</h3>
         <p><strong>${job.company}</strong></p>
         <p>${job.location}</p>
         <p>${job.salary}</p>
-        <a href="${job.apply_link}" target="_blank">
+        <a href="${job.apply}" target="_blank">
           <button>Apply Now</button>
         </a>
-        <p><small>Matched based on skills & experience alignment.</small></p>
       </div>
     `;
   });
@@ -242,7 +246,6 @@ function displayJobs(jobs){
 function showLoading(text){
   document.getElementById("loading").innerText=text;
 }
-
 function hideLoading(){
   document.getElementById("loading").innerText="";
 }
